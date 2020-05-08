@@ -1,0 +1,78 @@
+*nvim_lsp_denite.txt*	NeoVim language server sources for |denite|
+
+Version:  0.1
+Author:   Thore Weilbier <thore@weilbier.net>
+License:  MIT
+
+==============================================================================
+					   *nvim_lsp_denite_table_of_contents*
+TABLE OF CONTENTS~
+
+Introduction .................................. |nvim_lsp_denite_introduction|
+Usage ................................................ |nvim_lsp_denite_usage|
+Sources .............................................. |nvim_lsp_denite_usage|
+TODO-List ........................................ |nvim_lsp_denite_todo_list|
+
+
+==============================================================================
+						*nvim_lsp_denite_introduction*
+INTRODUCTION~
+
+This plugin provides additional and alternative sources for the |denite|
+plugin in relation to language servers. The communication with the language
+servers happens via the native LSP support by NeoVim. Checkout the |nvim-lsp|
+plugin in terms of how to attach |lsp| clients to buffers.
+
+
+==============================================================================
+						       *nvim_lsp_denite_usage*
+USAGE~
+
+If the |denite| plugin is installed and the active buffer has an attached
+|lsp| client, the |nvim_lsp_denite_sources| are available and can be simply
+retrieved as usual. E.g. >
+
+    :Denite lsp_symbols
+
+
+==============================================================================
+						     *nvim_lsp_denite_sources*
+SOURCES~
+
+					      *nvim_lsp_denite_source_symbols*
+|lsp_symbols|
+
+	An efficient alternative to the native |denite-source-outline| source
+	to interact with the symbols of a buffer or workspace. Such include
+	functions, classes, constants, etc.
+
+	Source arguments:
+
+	  1. method - To use method when querying the language server,
+		      default is `textDocument/documentSymbol`. Could be
+		      alternated `workspace/symbol` for example, if the server
+		      supports it.
+
+
+					   *nvim_lsp_denite_source_references*
+|lsp_references|
+
+	Works similar to |vim.lsp.buf.references()|, just that the result will
+	not be populated to the location list, but opens it with |denite|. The
+	references are queried for the current cursor position. This comes
+	with all the advantages of |denite| like previewing entries or push
+	a filtered selection to the quickfix list.
+
+
+==============================================================================
+							   *localrc_todo_list*
+TODO-List~
+
+    - add source for buffer diagnostics
+    - add source for action commands (combine with action for diagnostics?)
+    - search for servers that support workspace symbols
+
+
+==============================================================================
+
+vim:tw=78:ts=8:noet:ft=help:norl:
