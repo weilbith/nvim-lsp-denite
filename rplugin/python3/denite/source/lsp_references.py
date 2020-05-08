@@ -6,6 +6,11 @@ from denite.util import Candidate, Nvim, UserContext
 LspResponse = List[Dict[str, Any]]
 Reference = Dict[str, Any]
 
+SYNTAX_LINKS = [
+    {"name": "Position", "target_group": "Comment", "pattern": r"\[.*\]"},
+    {"name": "Text", "target_group": "String", "pattern": r">\s.*$"},
+]
+
 
 class Source(Base):
     def __init__(self, vim: Nvim) -> None:
@@ -17,6 +22,16 @@ class Source(Base):
         self.vim.exec_lua("_lsp = require('nvim_lsp_denite')")
         context["cursor_position"] = self.vim.current.window.cursor
         context["buffer_number"] = self.vim.current.buffer.number
+
+    def highlight(self) -> None:
+        for syntax_link in SYNTAX_LINKS:
+            name, target_group, pattern = syntax_link.values()
+            group = f"{self.syntax_name}_{name}"
+
+            self.vim.command(
+                f"syntax match {group} /{pattern}/ contained containedin={self.syntax_name}"
+            )
+            self.vim.command(f"highlight default link {group} {target_group}")
 
     def gather_candidates(self, context: UserContext) -> List[Candidate]:
         references = self._get_references(

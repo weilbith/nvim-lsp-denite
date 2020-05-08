@@ -35,6 +35,10 @@ SYMBOL_ID_TO_NAME = [
     "TypeParameter",
 ]
 
+SYNTAX_LINKS = [
+    {"name": "Kind", "target_group": "Special", "pattern": r"\[.*\]"},
+]
+
 
 class Source(Base):
     def __init__(self, vim: Nvim) -> None:
@@ -46,6 +50,16 @@ class Source(Base):
         self.vim.exec_lua("_lsp = require('nvim_lsp_denite')")
         context["buffer_number"] = self.vim.current.buffer.number
         context["lsp_method"] = _get_lsp_method(context)
+
+    def highlight(self) -> None:
+        for syntax_link in SYNTAX_LINKS:
+            name, target_group, pattern = syntax_link.values()
+            group = f"{self.syntax_name}_{name}"
+
+            self.vim.command(
+                f"syntax match {group} /{pattern}/ contained containedin={self.syntax_name}"
+            )
+            self.vim.command(f"highlight default link {group} {target_group}")
 
     def gather_candidates(self, context: UserContext) -> List[Candidate]:
         symbols = self._get_symbols(context["buffer_number"], context["lsp_method"])
