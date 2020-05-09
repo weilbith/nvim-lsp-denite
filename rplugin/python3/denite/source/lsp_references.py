@@ -19,10 +19,13 @@ class Source(LspSource):
 
     def on_init(self, context: UserContext) -> None:
         super().on_init(context)
+        word = self._get_word_under_cursor()
+        self.vim.out_write(f"{word}\n")
         self.highlight_links.extend(
             [
                 HighlightLink("Position", self.syntax_name, "Comment", r"\[.*\]"),
                 HighlightLink("Text", self.syntax_name, "String", r">\s.*$"),
+                HighlightLink("Word", f"{self.syntax_name}_Text", "Operator", word),
             ]
         )
 
@@ -52,3 +55,6 @@ class Source(LspSource):
                 LspReference(self.vim, response_entry)
                 for response_entry in response.result
             ]
+
+    def _get_word_under_cursor(self) -> str:
+        return self.vim.call("expand", "<cword>")

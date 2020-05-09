@@ -23,7 +23,10 @@ class LspReference:
     @property
     def description(self) -> str:
         return "{} [{}:{}] > {}".format(
-            self.file_path, self.position.line, self.position.column, self.content_line
+            self.relative_file_path,
+            self.position.line,
+            self.position.column,
+            self.content_line,
         )
 
     @property
@@ -38,6 +41,17 @@ class LspReference:
     def file_path(self):
         uri = self._response_entry["uri"]
         return self._vim.lua._lsp.uri_to_file_path(uri)
+
+    @property
+    def relative_file_path(self) -> str:
+        working_directory = self._vim.call("getcwd")
+
+        if self.file_path.startswith(working_directory):
+            relative_start_index = len(working_directory) + 1
+            return self.file_path[relative_start_index:]
+
+        else:
+            return self.file_path
 
     @property
     def as_candidate(self) -> Candidate:
