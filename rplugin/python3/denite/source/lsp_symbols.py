@@ -41,6 +41,7 @@ SYMBOL_ID_TO_NAME = [
 
 SYNTAX_LINKS = [
     {"name": "Kind", "target_group": "Special", "pattern": r"\[.*\]"},
+    {"name": "Origin", "target_group": "Comment", "pattern": r"(.*)"},
 ]
 
 
