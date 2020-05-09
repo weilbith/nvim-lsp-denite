@@ -1,84 +1,54 @@
-from typing import Any, Dict, List
+import os
+import site
+from typing import List
 
-from denite.base.source import Base
 from denite.util import Candidate, Nvim, UserContext
 
-LspResponse = List[Dict[str, Any]]
-Reference = Dict[str, Any]
+site.addsitedir(os.path.abspath(os.path.dirname(__file__) + os.path.sep + "lsp"))
 
-SYNTAX_LINKS = [
-    {"name": "Position", "target_group": "Comment", "pattern": r"\[.*\]"},
-    {"name": "Text", "target_group": "String", "pattern": r">\s.*$"},
-]
+from response import LspResponse  # isort:skip # noqa
+from reference import LspReference  # isort:skip # noqa
+from source import LspSource  # isort:skip # noqa
+from highlighting import HighlightLink  # isort:skip # noqa
 
 
-class Source(Base):
+class Source(LspSource):
     def __init__(self, vim: Nvim) -> None:
         super().__init__(vim)
         self.name = "lsp_references"
-        self.kind = "file"
 
     def on_init(self, context: UserContext) -> None:
-        self.vim.exec_lua("_lsp = require('nvim_lsp_denite')")
-        context["cursor_position"] = self.vim.current.window.cursor
-        context["buffer_number"] = self.vim.current.buffer.number
-
-    def highlight(self) -> None:
-        for syntax_link in SYNTAX_LINKS:
-            name, target_group, pattern = syntax_link.values()
-            group = f"{self.syntax_name}_{name}"
-
-            self.vim.command(
-                f"syntax match {group} /{pattern}/ contained containedin={self.syntax_name}"
-            )
-            self.vim.command(f"highlight default link {group} {target_group}")
+        super().on_init(context)
+        self.highlight_links.extend(
+            [
+                HighlightLink("Position", self.syntax_name, "Comment", r"\[.*\]"),
+                HighlightLink("Text", self.syntax_name, "String", r">\s.*$"),
+            ]
+        )
 
     def gather_candidates(self, context: UserContext) -> List[Candidate]:
-        references = self._get_references(
-            context["buffer_number"], context["cursor_position"]
-        )
+        references = self._get_references()
         candidates = []
 
         for reference in references:
-            candidates.append(self._reference_to_candidate(reference))
+            candidates.append(reference.as_candidate)
 
         return candidates
 
-    def _get_references(self, buffer_number: int, cursor_position) -> List[Reference]:
-        line, character = cursor_position
-        response = self.vim.lua._lsp.get_references_for_position(
-            buffer_number, line, character
+    def _get_references(self) -> List[LspReference]:
+        line, column = self.cursor_position
+        response = LspResponse(
+            self.vim.lua._lsp.get_references_for_position(
+                self.buffer_number, line, column
+            )
         )
 
-        if _response_is_error(response):
-            self.vim.out_write(f"{_get_error_message(response)}\n")
+        if response.is_error:
+            self.vim.out_write(f"Error: {response.error_message}\n")
             return []
-
-        elif len(response) > 0:
-            return response[0].get("result", [])
 
         else:
-            return []
-
-    def _reference_to_candidate(self, reference: Reference) -> Candidate:
-        path = self.vim.lua._lsp.uri_to_filename(reference["uri"])
-        location = reference["range"]["start"]
-        line = location["line"] + 1
-        character = location["character"] + 1
-        text = self.vim.lua._lsp.read_file_line(path, line)
-
-        return {
-            "word": f"{path} [{line}:{character}] > {text}",
-            "action__text": text,
-            "action__path": path,
-            "action__line": line,
-            "action__col": character,
-        }
-
-
-def _response_is_error(response: LspResponse) -> bool:
-    return len(response) == 1 and "error" in response[0]
-
-
-def _get_error_message(response: LspResponse) -> str:
-    return response[0].get("error", {}).get("message", "LSP response error")
+            return [
+                LspReference(self.vim, response_entry)
+                for response_entry in response.result
+            ]
