@@ -65,7 +65,7 @@ SOURCES~
 
 
 ==============================================================================
-							   *localrc_todo_list*
+						   *nvim_lsp_denite_todo_list*
 TODO-List~
 
     - allow to ignore symbol types (e.g. TypeScript constants are copious)
