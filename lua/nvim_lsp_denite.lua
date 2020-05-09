@@ -52,8 +52,12 @@ function M.get_references_for_position(buffer_number, line, character)
     return parse_response(response)
 end
 
-function M.uri_to_filename(uri)
+function M.uri_to_file_path(uri)
     return vim.uri_to_fname(uri)
+end
+
+function M.uri_from_buffer_number(buffer_number)
+    return vim.uri_from_bufnr(buffer_number)
 end
 
 function M.read_file_line(file_path, line)
