@@ -1,6 +1,6 @@
 *nvim_lsp_denite.txt*	NeoVim language server sources for |denite|
 
-Version:  0.1
+Version:  0.2
 Author:   Thore Weilbier <thore@weilbier.net>
 License:  MIT
 
@@ -68,6 +68,8 @@ SOURCES~
 							   *localrc_todo_list*
 TODO-List~
 
+    - allow to ignore symbol types (e.g. TypeScript constants are copious)
+    - clean up code base for symbols (figure out how module structure works)
     - add source for buffer diagnostics
     - add source for action commands (combine with action for diagnostics?)
     - search for servers that support workspace symbols
