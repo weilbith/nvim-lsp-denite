@@ -1,6 +1,6 @@
 import os
 import site
-from typing import List
+from typing import Dict, List
 
 from denite.util import Candidate, Nvim, UserContext
 
@@ -8,6 +8,7 @@ site.addsitedir(os.path.abspath(os.path.dirname(__file__) + os.path.sep + "lsp")
 
 from response import LspResponse  # isort:skip # noqa
 from symbols import LspSymbol  # isort:skip # noqa
+from symbols_scope import LspSymbolsScope  # isort:skip # noqa
 from source import LspSource  # isort:skip # noqa
 from highlighting import HighlightLink  # isort:skip # noqa
 
@@ -37,11 +38,7 @@ class Source(LspSource):
         return candidates
 
     def _get_symbols(self) -> List[LspSymbol]:
-        response = LspResponse(
-            self.vim.lua._lsp.get_symbols_for_buffer(
-                self.buffer_number, self.lsp_method
-            )
-        )
+        response = self._query_language_server()
 
         if response.is_error:
             self.vim.out_write(f"Error: {response.error_message}\n")
@@ -52,6 +49,17 @@ class Source(LspSource):
                 LspSymbol(self.vim, response_entry, self.buffer_number)
                 for response_entry in response.result
             ]
+
+    def _query_language_server(self) -> LspResponse:
+        plain_response: Dict = {}
+
+        if self.scope is LspSymbolsScope.Document:
+            plain_response = self.vim.lua._lsp.get_document_symbols(self.buffer_number)
+
+        if self.scope is LspSymbolsScope.Workspace:
+            plain_response = self.vim.lua._lsp.get_workspace_symbols(self.buffer_number)
+
+        return LspResponse(plain_response)
 
     def _get_candidates_hierarchically(
         self, symbol: LspSymbol, parents: List[str] = []
@@ -72,6 +80,12 @@ class Source(LspSource):
         return candidates
 
     @property
-    def lsp_method(self) -> str:
+    def scope(self) -> LspSymbolsScope:
         arguments = self.context["args"]
-        return arguments[0] if len(arguments) > 0 else "textDocument/documentSymbol"
+        scope_argument = arguments[0] if len(arguments) > 0 else None
+
+        try:
+            return LspSymbolsScope(scope_argument)
+
+        except Exception:
+            return LspSymbolsScope.Document

@@ -1,6 +1,6 @@
 *nvim_lsp_denite.txt*	NeoVim language server sources for |denite|
 
-Version:  0.2
+Version:  0.3
 Author:   Thore Weilbier <thore@weilbier.net>
 License:  MIT
 
@@ -48,10 +48,10 @@ SOURCES~
 
 	Source arguments:
 
-	  1. method - To use method when querying the language server,
-		      default is `textDocument/documentSymbol`. Could be
-		      alternated `workspace/symbol` for example, if the server
-		      supports it.
+	  1. scope -  The scope to query symbols for. Can be either `document`
+		      or `workspace`, while `document` is the default scope.
+		      The language server must support the respective method
+		      (`textDocument/documentSymbol`, `workspace/symbol`).
 
 
 					   *nvim_lsp_denite_source_references*
@@ -69,10 +69,8 @@ SOURCES~
 TODO-List~
 
     - allow to ignore symbol types (e.g. TypeScript constants are copious)
-    - clean up code base for symbols (figure out how module structure works)
     - add source for buffer diagnostics
     - add source for action commands (combine with action for diagnostics?)
-    - search for servers that support workspace symbols
 
 
 ==============================================================================

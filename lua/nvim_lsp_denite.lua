@@ -12,8 +12,12 @@ local function make_document_parameter(buffer_number)
     return {uri = vim.uri_from_bufnr(buffer_number)}
 end
 
-local function make_symbols_parameter(buffer_number)
+local function make_document_symbols_parameter(buffer_number)
     return {textDocument = make_document_parameter(buffer_number)}
+end
+
+local function make_workspace_symbols_parameter(buffer_number)
+    return {query = ""}
 end
 
 local function make_references_parameter(buffer_number, line, character)
@@ -32,13 +36,23 @@ local function parse_response(response)
     end
 end
 
-function M.get_symbols_for_buffer(buffer_number, method)
+function M.get_document_symbols(buffer_number)
     if not lsp_client_available(buffer_number) then
         return {}
     end
 
-    local parameter = make_symbols_parameter(buffer_number)
-    local response = lsp.buf_request_sync(buffer_number, method, parameter)
+    local parameter = make_document_symbols_parameter(buffer_number)
+    local response = lsp.buf_request_sync(buffer_number, "textDocument/documentSymbol", parameter)
+    return parse_response(response)
+end
+
+function M.get_workspace_symbols(buffer_number)
+    if not lsp_client_available(buffer_number) then
+        return {}
+    end
+
+    local parameter = make_workspace_symbols_parameter(buffer_number)
+    local response = lsp.buf_request_sync(buffer_number, "workspace/symbol", parameter)
     return parse_response(response)
 end
 
