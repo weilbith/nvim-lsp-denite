@@ -11,7 +11,9 @@ Install the plugin with your favorite manager tool. Here is an example using
 [dein.vim](https://github.com/Shougo/dein.vim):
 
 ```vim
-call dein#add('weilbith/nvim-lsp-denite')
+call dein#add('weilbith/nvim-lsp-denite', {
+      \ 'depends': 'denite.nvim'
+      \ })
 ```
 
 Please make sure that you have also installed the following plugins:
