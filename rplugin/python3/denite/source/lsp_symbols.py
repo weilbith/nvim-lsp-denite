@@ -94,10 +94,13 @@ class Source(Base):
         candidates = [self._symbol_to_candidate(symbol, parents)]
 
         if _symbol_is_document_symbol(symbol):
-            parents.append(_get_symbol_name(symbol))
+            parents_for_child = parents.copy()
+            parents_for_child.append(_get_symbol_name(symbol))
 
             for child_symbol in symbol.get("children", []):
-                candidates.extend(self._symbol_to_candidates(child_symbol, parents))
+                candidates.extend(
+                    self._symbol_to_candidates(child_symbol, parents_for_child)
+                )
 
         return candidates
 
