@@ -20,7 +20,6 @@ class Source(LspSource):
     def on_init(self, context: UserContext) -> None:
         super().on_init(context)
         word = self._get_word_under_cursor()
-        self.vim.out_write(f"{word}\n")
         self.highlight_links.extend(
             [
                 HighlightLink("Position", self.syntax_name, "Comment", r"\[.*\]"),
